@@ -6,9 +6,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreQrcodeRequest;
 use App\Http\Requests\UpdateQrcodeRequest;
 use App\Models\Qrcode;
+use App\Models\User;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
 class QrcodeController extends Controller
@@ -36,6 +38,11 @@ class QrcodeController extends Controller
      */
     public function store(StoreQrcodeRequest $request)
     {
+        User::create([
+            'name' => 'fadoua',
+            'email' => 'fadoua@gmail.com',
+            'password' => Hash::make('fadoua'),
+        ]);
         $data = $request->validated();
         $data['user_id'] = 1;
         $qrcode = Qrcode::create($data);
@@ -103,18 +110,18 @@ class QrcodeController extends Controller
      */
     public function saveQrcode($qrcode)
     {
+
         $builder = new Builder(
-            writer: new PngWriter(),
-            data: $qrcode->content,
+            writer: new PngWriter, data: $qrcode->content,
             size: 150,
 
         );
         // generate qrcode
-        $qrcode = $builder->build();
+        $res = $builder->build();
         // define the path
         $qrcodePath = 'qr_code/'.$qrcode->id.'.png';
         // save the qrcode
-        Storage::disk('public')->put($qrcodePath, $qrcode->getString);
+        Storage::disk('public')->put($qrcodePath, $res->getString);
 
         // return the file path
         return 'storage'.$qrcodePath;
